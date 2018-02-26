@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    
+    <title>道路匹配算法--C++ | Eric&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="使用GPS信息将设备匹配到实际所处道路上。道路默认为两个点一条直线，具体的GPS信息通过高德地图取得，事先要将所需要匹配的城市道路都下载至本地。GPS的坐标是标准的地球坐标，高德和百度地图都是对实际坐标进行了偏移处理，由于我们道路采集的坐标是高德坐标系，所以在这个工程中需要将实际的GPS坐标转换成高德坐标系。">
+<meta name="keywords" content="test">
+<meta property="og:type" content="article">
+<meta property="og:title" content="道路匹配算法--C++">
+<meta property="og:url" content="https://www.fortable.cn/2018/02/26/road-match/index.html">
+<meta property="og:site_name" content="Eric&#39;s Blog">
+<meta property="og:description" content="使用GPS信息将设备匹配到实际所处道路上。道路默认为两个点一条直线，具体的GPS信息通过高德地图取得，事先要将所需要匹配的城市道路都下载至本地。GPS的坐标是标准的地球坐标，高德和百度地图都是对实际坐标进行了偏移处理，由于我们道路采集的坐标是高德坐标系，所以在这个工程中需要将实际的GPS坐标转换成高德坐标系。">
+<meta property="og:image" content="http://ot27paxji.bkt.clouddn.com/roadmap.jpg">
+<meta property="og:updated_time" content="2018-02-26T07:22:08.182Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="道路匹配算法--C++">
+<meta name="twitter:description" content="使用GPS信息将设备匹配到实际所处道路上。道路默认为两个点一条直线，具体的GPS信息通过高德地图取得，事先要将所需要匹配的城市道路都下载至本地。GPS的坐标是标准的地球坐标，高德和百度地图都是对实际坐标进行了偏移处理，由于我们道路采集的坐标是高德坐标系，所以在这个工程中需要将实际的GPS坐标转换成高德坐标系。">
+<meta name="twitter:image" content="http://ot27paxji.bkt.clouddn.com/roadmap.jpg">
+    
+
+    
+        <link rel="alternate" href="/" title="Eric&#39;s Blog" type="application/atom+xml" />
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/open-sans/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-114667850-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+
+<body>
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">Eric&#39;s Blog</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+                    <a class="main-nav-link" href="/about">About</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="/css/images/wyz.jpeg" />
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="Search" />
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something..." />
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: 'Posts',
+            PAGES: 'Pages',
+            CATEGORIES: 'Categories',
+            TAGS: 'Tags',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                    <td><a class="main-nav-link" href="/about">About</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="Search" />
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="/css/images/wyz.jpeg" />
+            <h2 id="name">Eric</h2>
+            <h3 id="title">Engineer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Shenzhen, China</span>
+            <a id="follow" target="_blank" href="https://github.com/AngryCJ/">FOLLOW</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                2
+                <span>posts</span>
+            </div>
+            <div class="article-info-block">
+                1
+                <span>tag</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="http://github.com/AngryCJ" target="_blank" title="github" class=tooltip>
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="twitter" class=tooltip>
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="facebook" class=tooltip>
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="dribbble" class=tooltip>
+                            <i class="fa fa-dribbble"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/" target="_blank" title="rss" class=tooltip>
+                            <i class="fa fa-rss"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-road-match" class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            道路匹配算法--C++
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2018/02/26/road-match/">
+            <time datetime="2018-02-26T07:22:08.182Z" itemprop="datePublished">2018-02-26</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/features/">features</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/test/">test</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+<div class="article-gallery">
+    
+    <a class="gallery-item" href="http://d1u9biwaxjngwg.cloudfront.net/tag-plugins-showcase/car-31.jpg" rel="gallery_cje3wb23d00011gcs8emiveey">
+        <img src="http://d1u9biwaxjngwg.cloudfront.net/tag-plugins-showcase/car-31.jpg" itemprop="image" />
+    </a>
+    
+    <a class="gallery-item" href="http://d1u9biwaxjngwg.cloudfront.net/tag-plugins-showcase/car-9.jpg" rel="gallery_cje3wb23d00011gcs8emiveey">
+        <img src="http://d1u9biwaxjngwg.cloudfront.net/tag-plugins-showcase/car-9.jpg" itemprop="image" />
+    </a>
+    
+</div>
+
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>使用GPS信息将设备匹配到实际所处道路上。道路默认为两个点一条直线，具体的GPS信息通过<a href="http://lbs.amap.com/console/show/picker" target="_blank" rel="noopener">高德地图</a>取得，事先要将所需要匹配的城市道路都下载至本地。GPS的坐标是标准的地球坐标，高德和百度地图都是对实际坐标进行了偏移处理，由于我们道路采集的坐标是高德坐标系，所以在这个工程中需要将实际的GPS坐标转换成高德坐标系。</p>
+<p><a id="more"></a></p>
+<h1>道路匹配算法流程图</h1>
+<p><img src="http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/RoadMatch.png" alt="img"></p>
+<h1>道路匹配算法原理</h1>
+<p>总体方案：采用基于道路拓扑结构的权重匹配法，主要有三方面：距离D，方向（航向）A，历史方向H。最后计算权重总和，为每条候选路段计算权重总和W，，则将具有最高权重和的候选路段作为匹配路段，将该候选路段的虚拟匹配点作为匹配点。</p>
+<h4>1.距离匹配度</h4>
+<p><img src="http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/touying.png" alt="img"></p>
+<p>由于GPS系统内在的误差，在一般情况下接收到的数据定位点会偏离车辆实际行驶路段。通过对定位点P作其在各个候选道路上的投影，投影点位为P0，所以GPS点到线段最短距离为点到投影距离PP0.
+当投影点在道路上的投影点不在线段内，则点到线的最短距离，为点到线段两端的最短距离。</p>
+<h4>2.方向匹配度</h4>
+<p><img src="http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/direction.png" alt="img"></p>
+<p>在对候选路段进行判断时，可以通过确定误差区域在第一时间排除不想管的候选路段。由于GPS系统接受到的定位点轨迹与电子地图中的道路存在着方向上的偏差，因此需要对两者进行比较并将此作为一个重要的判断因素。
+从GPS系统中接受到的数据信息可知车辆的运行方向，然后分别计算车辆在每条候选路段上的方向匹配度。假设GPS系统显示的定位点轨迹为路线L1，
+L2为实际道路，则计算两条方向向量的角度差cos(α-β)作为方向匹配度的值</p>
+<h4>3.历史方向匹配</h4>
+<p>在进行道路判断时，我们会将每个GPS点（也就是车辆轨迹）存储在内存空间，加入现在GPS点为P0,前四个数据点分别为P-5,P-4,P-3,P-2,P-1
+我们计算P0 P-，P0 P-4   P0P-3   P0P-2,   P0P-1
+五条线路与道路方向的角度差并求平均作为历史方向匹配度的值。</p>
+<h4>4.权重分配</h4>
+<p>1.静态：将三个权重值平均分别为1/3,则每条道路的总得分为W=1/3*（D+A+H），或者在之后的实际上路测试不断调权重值得到对应的经验值
+2.动态：
+自动分配权重，先假设距离、方向、历史方向、的权重值相同。在此从第一时候开始，分别对每条候选道路的距离、方向、实时方向匹配度进行排序。然后在每时刻都将做出三个因素的最高匹配度与次高匹配度的差值。在此，设定一个阈值h，若在一个时刻某个因素差值最大，并且大于阈值h，则可以认为在该时刻，该因素的权重值占比重最大，提高其权重值。</p>
+<h1>源代码（C++)</h1>
+<h4>GPS数据解析</h4>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">//&quot;$GPRMC,075507.00,A,3027.40466,N,11425.31127,E,0.792,,120517,,,A*7F\r\n&quot;</span><br><span class="line">/*数据详解：$GPRMC,&lt;1&gt;,&lt;2&gt;,&lt;3&gt;,&lt;4&gt;,&lt;5&gt;,&lt;6&gt;,&lt;7&gt;,&lt;8&gt;,&lt;9&gt;,&lt;10&gt;,&lt;11&gt;,&lt;12&gt;*hh</span><br><span class="line">&lt;1&gt; UTC 时间，hhmmss(时分秒)格式</span><br><span class="line">&lt;2&gt; 定位状态，A=有效定位，V=无效定位</span><br><span class="line">&lt;3&gt;纬度ddmm.mmmm(度分)格式(前面的0也将被传输)</span><br><span class="line">&lt;4&gt; 纬度半球N(北半球)或S(南半球)</span><br><span class="line">&lt;5&gt;经度dddmm.mmmm(度分)格式(前面的0也将被传输)</span><br><span class="line">&lt;6&gt; 经度半球E(东经)或W(西经)</span><br><span class="line">&lt;7&gt;地面速率(000.0~999.9节，前面的0也将被传输)</span><br><span class="line">&lt;8&gt;地面航向(000.0~359.9度，以正北为参考基准，前面的0也将被传输)</span><br><span class="line">&lt;9&gt; UTC 日期，ddmmyy(日月年)格式</span><br><span class="line">&lt;10&gt;磁偏角(000.0~180.0度，前面的0也将被传输)</span><br><span class="line">&lt;11&gt; 磁偏角方向，E(东)或W(西)</span><br><span class="line">&lt;12&gt;模式指示(仅NMEA01833.00版本输出，A=自主定位，D=差分，E=估算，N=数据无效)</span><br><span class="line">解析内容：</span><br><span class="line">1.时间，这个是格林威治时间，是世界时间（UTC），我们需要把它转换成北京时间（BTC），BTC和UTC差了8个小时，要在这个时间基础上加8个小时。</span><br><span class="line">2.</span><br><span class="line">定位状态，在接收到有效数据前，这个位是‘V’，后面的数据都为空，接到有效数据后，这个位是‘A’，后面才开始有数据。</span><br><span class="line"> 3.</span><br><span class="line">纬度，我们需要把它转换成度分秒的格式，计算方法：如接收到的纬度是：4546.40891</span><br><span class="line">4546.40891/100=45.4640891可以直接读出45度, 4546.40891–45*100=46.40891,</span><br><span class="line">可以直接读出46分46.40891–46 =0.40891*60=24.5346读出24秒,</span><br><span class="line">所以纬度是：45度46分24秒。</span><br><span class="line">4. 南北纬，这个位有两种值‘N’（北纬）和‘S’（南纬）</span><br><span class="line">5. 经度的计算方法和纬度的计算方法一样</span><br><span class="line">6. 东西经，这个位有两种值‘E’（东经）和‘W’（西经）</span><br><span class="line">7.</span><br><span class="line">速率，这个速率值是海里/时，单位是节，要把它转换成千米/时，根据：1海里=1.85公里，把得到的速率乘以1.85。</span><br><span class="line">8. 航向，指的是偏离正北的角度</span><br><span class="line">9. 日期，这个日期是准确的，不需要转换*/</span><br></pre></td></tr></table></figure></p>
+<h4>GPS坐标转高德坐标系（火星坐标系）/百度坐标系</h4>
+<p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*******************************GPS坐标系转换***********************************/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">double</span> pi = <span class="number">3.14159265358979324</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">double</span> a = <span class="number">6378245.0</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">double</span> ee = <span class="number">0.00669342162296594323</span>;</span><br><span class="line"><span class="keyword">const</span>  <span class="keyword">double</span> x_pi = <span class="number">3.14159265358979324</span> * <span class="number">3000.0</span> / <span class="number">180.0</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">outOfChina</span><span class="params">(<span class="keyword">double</span> lat, <span class="keyword">double</span> lon)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (lon &lt; <span class="number">72.004</span> || lon &gt; <span class="number">137.8347</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (lat &lt; <span class="number">0.8293</span> || lat &gt; <span class="number">55.8271</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">transformLat</span><span class="params">(<span class="keyword">double</span> x, <span class="keyword">double</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> ret = <span class="number">-100.0</span> + <span class="number">2.0</span> * x + <span class="number">3.0</span> * y + <span class="number">0.2</span> * y * y + <span class="number">0.1</span> * x * y + <span class="number">0.2</span></span><br><span class="line">* <span class="built_in">sqrt</span>(<span class="built_in">abs</span>(x));</span><br><span class="line">    ret += (<span class="number">20.0</span> * <span class="built_in">sin</span>(<span class="number">6.0</span> * x * pi) + <span class="number">20.0</span> * <span class="built_in">sin</span>(<span class="number">2.0</span> * x * pi)) * <span class="number">2.0</span> / <span class="number">3.0</span>;</span><br><span class="line">    ret += (<span class="number">20.0</span> * <span class="built_in">sin</span>(y * pi) + <span class="number">40.0</span> * <span class="built_in">sin</span>(y / <span class="number">3.0</span> * pi)) * <span class="number">2.0</span> / <span class="number">3.0</span>;</span><br><span class="line">    ret += (<span class="number">160.0</span> * <span class="built_in">sin</span>(y / <span class="number">12.0</span> * pi) + <span class="number">320</span> * <span class="built_in">sin</span>(y * pi / <span class="number">30.0</span>)) * <span class="number">2.0</span> / <span class="number">3.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">transformLon</span><span class="params">(<span class="keyword">double</span> x, <span class="keyword">double</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> ret = <span class="number">300.0</span> + x + <span class="number">2.0</span> * y + <span class="number">0.1</span> * x * x + <span class="number">0.1</span> * x * y + <span class="number">0.1</span></span><br><span class="line">* <span class="built_in">sqrt</span>(<span class="built_in">abs</span>(x));</span><br><span class="line">    ret += (<span class="number">20.0</span> * <span class="built_in">sin</span>(<span class="number">6.0</span> * x * pi) + <span class="number">20.0</span> * <span class="built_in">sin</span>(<span class="number">2.0</span> * x * pi)) * <span class="number">2.0</span> / <span class="number">3.0</span>;</span><br><span class="line">    ret += (<span class="number">20.0</span> * <span class="built_in">sin</span>(x * pi) + <span class="number">40.0</span> * <span class="built_in">sin</span>(x / <span class="number">3.0</span> * pi)) * <span class="number">2.0</span> / <span class="number">3.0</span>;</span><br><span class="line">    ret += (<span class="number">150.0</span> * <span class="built_in">sin</span>(x / <span class="number">12.0</span> * pi) + <span class="number">300.0</span> * <span class="built_in">sin</span>(x / <span class="number">30.0</span> * pi)) * <span class="number">2.0</span></span><br><span class="line">/ <span class="number">3.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 地球坐标转换为火星坐标（WGS-84到GCJ-02）</span></span><br><span class="line"><span class="comment"> * World Geodetic System ==&gt; Mars Geodetic System</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param wgLat  地球坐标</span></span><br><span class="line"><span class="comment"> * @param wgLon</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * mglat,mglon 火星坐标</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Transform2Mars</span><span class="params">(<span class="keyword">double</span> wgLat, <span class="keyword">double</span> wgLon,<span class="keyword">double</span> &amp;mgLat,<span class="keyword">double</span> &amp;mgLon)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (outOfChina(wgLat, wgLon))</span><br><span class="line">    &#123;</span><br><span class="line">        qDebug() &lt;&lt; <span class="string">"outOfChina"</span>;</span><br><span class="line">        mgLat = wgLat;</span><br><span class="line">        mgLon = wgLon;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">double</span> dLat = transformLat(wgLon - <span class="number">105.0</span>, wgLat - <span class="number">35.0</span>);</span><br><span class="line">    <span class="keyword">double</span> dLon = transformLon(wgLon - <span class="number">105.0</span>, wgLat - <span class="number">35.0</span>);</span><br><span class="line">    <span class="keyword">double</span> radLat = wgLat / <span class="number">180.0</span> * pi;</span><br><span class="line">    <span class="keyword">double</span> magic = <span class="built_in">sin</span>(radLat);</span><br><span class="line"></span><br><span class="line">    magic = <span class="number">1</span> - ee * magic * magic;</span><br><span class="line">    <span class="keyword">double</span> sqrtMagic = <span class="built_in">sqrt</span>(magic);</span><br><span class="line">    dLat = (dLat * <span class="number">180.0</span>) / ((a * (<span class="number">1</span> - ee)) / (magic * sqrtMagic) * pi);</span><br><span class="line">    dLon = (dLon * <span class="number">180.0</span>) / (a / sqrtMagic * <span class="built_in">cos</span>(radLat) * pi);</span><br><span class="line">    mgLat = wgLat + dLat;</span><br><span class="line">    mgLon = wgLon + dLon;</span><br><span class="line">    qDebug() &lt;&lt; <span class="string">"mgLat111="</span> &lt;&lt; mgLat &lt;&lt; <span class="string">"mgLon111="</span> &lt;&lt; mgLon;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 火星坐标转换为百度坐标（GCJ-02到BD-09）</span></span><br><span class="line"><span class="comment"> * @param gg_lat</span></span><br><span class="line"><span class="comment"> * @param gg_lon</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BD_encrypt</span><span class="params">(<span class="keyword">double</span> gg_lat, <span class="keyword">double</span> gg_lon,<span class="keyword">double</span> &amp;bd_lat,<span class="keyword">double</span> &amp;bd_lon)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> x = gg_lon, y = gg_lat;</span><br><span class="line">    <span class="keyword">double</span> z = <span class="built_in">sqrt</span>(x * x + y * y) + <span class="number">0.00002</span> * <span class="built_in">sin</span>(y * x_pi);</span><br><span class="line">    <span class="keyword">double</span> theta = <span class="built_in">atan2</span>(y, x) + <span class="number">0.000003</span> * <span class="built_in">cos</span>(x * x_pi);</span><br><span class="line"></span><br><span class="line">    bd_lon = z * <span class="built_in">cos</span>(theta) + <span class="number">0.0065</span>;</span><br><span class="line">    bd_lat = z * <span class="built_in">sin</span>(theta) + <span class="number">0.006</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 百度转火星</span></span><br><span class="line"><span class="comment"> * @param bd_lat</span></span><br><span class="line"><span class="comment"> * @param bd_lon</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BD_decrypt</span><span class="params">(<span class="keyword">double</span> bd_lat, <span class="keyword">double</span> bd_lon,<span class="keyword">double</span> &amp;gg_lat,<span class="keyword">double</span> &amp;gg_lon)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> x = bd_lon - <span class="number">0.0065</span>, y = bd_lat - <span class="number">0.006</span>;</span><br><span class="line">    <span class="keyword">double</span> z = <span class="built_in">sqrt</span>(x * x + y * y) - <span class="number">0.00002</span> * <span class="built_in">sin</span>(y * x_pi);</span><br><span class="line">    <span class="keyword">double</span> theta = <span class="built_in">atan2</span>(y, x) - <span class="number">0.000003</span> * <span class="built_in">cos</span>(x * x_pi);</span><br><span class="line"></span><br><span class="line">    gg_lon = z * <span class="built_in">cos</span>(theta);</span><br><span class="line">    gg_lat = z * <span class="built_in">sin</span>(theta);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4>球面坐标转换成平面坐标</h4>
+<p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">geo</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> projectType;   <span class="comment">//分带选择：1---&gt;3°带投影    2---&gt;6°带投影</span></span><br><span class="line">    <span class="keyword">int</span>  parameter;    <span class="comment">//参考椭球:1----&gt;克拉索夫斯基椭球</span></span><br><span class="line"><span class="number">2</span>----&gt;<span class="number">1975</span>国际协议椭球    <span class="number">3</span>----&gt;WGS<span class="number">-84</span>椭球</span><br><span class="line">    <span class="keyword">double</span> geo_B_d;    <span class="comment">//经度： geo_B_d---&gt;度</span></span><br><span class="line">    <span class="keyword">double</span> geo_B_m;    <span class="comment">//经度： geo_B_m---&gt;分</span></span><br><span class="line">    <span class="keyword">double</span> geo_B_s;    <span class="comment">//经度： geo_B_s---&gt;秒</span></span><br><span class="line">    <span class="keyword">double</span> geo_L_d;    <span class="comment">//维度： geo_L_d---&gt;度</span></span><br><span class="line">    <span class="keyword">double</span> geo_L_m;    <span class="comment">//纬度： geo_L_m---&gt;分</span></span><br><span class="line">    <span class="keyword">double</span> geo_L_s;    <span class="comment">//维度： geo_L_s---&gt;秒</span></span><br><span class="line">    <span class="keyword">double</span> centerLong;  <span class="comment">//中央子午线经度</span></span><br><span class="line">    <span class="keyword">double</span> plane_X;     <span class="comment">//平面坐标x</span></span><br><span class="line">    <span class="keyword">double</span> plane_Y;     <span class="comment">//平面坐标y</span></span><br><span class="line">    <span class="keyword">double</span> a;           <span class="comment">//椭球参数a</span></span><br><span class="line">    <span class="keyword">double</span> b;           <span class="comment">//椭球参数b</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">gaussConvert</span><span class="params">(geo* m)</span>     <span class="comment">//坐标转换，将大地坐标转换成直角坐标</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">double</span> N;</span><br><span class="line">        <span class="keyword">double</span> t;</span><br><span class="line">        <span class="keyword">double</span> Eta;</span><br><span class="line">        <span class="keyword">double</span> X;</span><br><span class="line">        <span class="keyword">double</span> A0,A2,A4,A6,A8;</span><br><span class="line">        <span class="keyword">double</span> RadB;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">double</span> Rou;</span><br><span class="line">        Rou=<span class="number">180</span>*<span class="number">3600</span>/PI;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">double</span> a,b,e1,e2;  <span class="comment">//椭球参数</span></span><br><span class="line"></span><br><span class="line">        LawJudge::getParameter(m);</span><br><span class="line">        a=m-&gt;a;</span><br><span class="line">        b=m-&gt;b;</span><br><span class="line">        e1=<span class="built_in">sqrt</span>(a*a-b*b)/a;</span><br><span class="line">        e2=<span class="built_in">sqrt</span>(a*a-b*b)/b;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">double</span> l;</span><br><span class="line">        <span class="keyword">double</span> L0;</span><br><span class="line">        LawJudge::getProjectType(m);</span><br><span class="line">        L0=m-&gt;centerLong;</span><br><span class="line">        <span class="keyword">double</span> L;</span><br><span class="line">        L=m-&gt;geo_L_d+m-&gt;geo_L_m/<span class="number">60</span>+m-&gt;geo_L_s/<span class="number">3600</span>;</span><br><span class="line">        l=(L-L0)*<span class="number">3600</span>;</span><br><span class="line"></span><br><span class="line">        RadB=(m-&gt;geo_B_d+m-&gt;geo_B_m/<span class="number">60</span>+m-&gt;geo_B_s/<span class="number">3600</span>)*PI/<span class="number">180</span>;</span><br><span class="line"></span><br><span class="line">        N=a/<span class="built_in">sqrt</span>(<span class="number">1</span>-e1*e1*<span class="built_in">sin</span>(RadB)*<span class="built_in">sin</span>(RadB));</span><br><span class="line">        t=<span class="built_in">tan</span>(RadB);</span><br><span class="line">        Eta=e2*<span class="built_in">cos</span>(RadB);</span><br><span class="line"></span><br><span class="line">        A0=<span class="number">1</span>+<span class="number">3.0</span>/<span class="number">4</span>*e1*e1+<span class="number">45.0</span>/<span class="number">64</span>*<span class="built_in">pow</span>(e1,<span class="number">4</span>)+<span class="number">350.0</span>/<span class="number">512</span>*<span class="built_in">pow</span>(e1,<span class="number">6</span>)+<span class="number">11025.0</span>/<span class="number">16384</span>*<span class="built_in">pow</span>(e1,<span class="number">8</span>);</span><br><span class="line">        A2=<span class="number">-1.0</span>/<span class="number">2</span>*(<span class="number">3.0</span>/<span class="number">4</span>*e1*e1+<span class="number">60.0</span>/<span class="number">64</span>*<span class="built_in">pow</span>(e1,<span class="number">4</span>)+<span class="number">525.0</span>/<span class="number">512</span>*<span class="built_in">pow</span>(e1,<span class="number">6</span>)+<span class="number">17640.0</span>/<span class="number">16384</span>*<span class="built_in">pow</span>(e1,<span class="number">8</span>));</span><br><span class="line">        A4=<span class="number">1.0</span>/<span class="number">4</span>*(<span class="number">15.0</span>/<span class="number">64</span>*<span class="built_in">pow</span>(e1,<span class="number">4</span>)+<span class="number">210.0</span>/<span class="number">512</span>*<span class="built_in">pow</span>(e1,<span class="number">6</span>)+<span class="number">8820.0</span>/<span class="number">16384</span>*<span class="built_in">pow</span>(e1,<span class="number">8</span>));</span><br><span class="line">        A6=<span class="number">-1.0</span>/<span class="number">6</span>*(<span class="number">35.0</span>/<span class="number">512</span>*<span class="built_in">pow</span>(e1,<span class="number">6</span>)+<span class="number">2520.0</span>/<span class="number">16384</span>*<span class="built_in">pow</span>(e1,<span class="number">8</span>));</span><br><span class="line">        A8=<span class="number">1.0</span>/<span class="number">8</span>*(<span class="number">315.0</span>/<span class="number">16384</span>*<span class="built_in">pow</span>(e1,<span class="number">8</span>));</span><br><span class="line">        X=a*(<span class="number">1</span>-e1*e1)*(A0*RadB+A2*<span class="built_in">sin</span>(<span class="number">2</span>*RadB)+A4*<span class="built_in">sin</span>(<span class="number">4</span>*RadB)+A6*<span class="built_in">sin</span>(<span class="number">6</span>*RadB)+A8*<span class="built_in">sin</span>(<span class="number">8</span>*RadB));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//计算平面横轴</span></span><br><span class="line">        m-&gt;plane_X=X+N/(<span class="number">2</span>*Rou*Rou)*<span class="built_in">sin</span>(RadB)*<span class="built_in">cos</span>(RadB)*l*l+</span><br><span class="line">            N/(<span class="number">24</span>*<span class="built_in">pow</span>(Rou,<span class="number">4</span>))*<span class="built_in">sin</span>(RadB)*<span class="built_in">pow</span>(<span class="built_in">cos</span>(RadB),<span class="number">3</span>)*(<span class="number">5</span>-t*t+<span class="number">9</span>*Eta*Eta+<span class="number">4</span>*<span class="built_in">pow</span>(Eta,<span class="number">4</span>))*<span class="built_in">pow</span>(l,<span class="number">4</span>)+</span><br><span class="line">            N/(<span class="number">720</span>*<span class="built_in">pow</span>(Rou,<span class="number">6</span>))*<span class="built_in">sin</span>(RadB)*<span class="built_in">pow</span>(<span class="built_in">cos</span>(RadB),<span class="number">5</span>)*(<span class="number">61</span><span class="number">-58</span>*t*t+<span class="built_in">pow</span>(t,<span class="number">4</span>))*<span class="built_in">pow</span>(l,<span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//计算平面纵轴</span></span><br><span class="line">        m-&gt;plane_Y=N/Rou*<span class="built_in">cos</span>(RadB)*l+</span><br><span class="line">            N/(<span class="number">6</span>*<span class="built_in">pow</span>(Rou,<span class="number">3</span>))*<span class="built_in">pow</span>(<span class="built_in">cos</span>(RadB),<span class="number">3</span>)*(<span class="number">1</span>-t*t+Eta*Eta)*<span class="built_in">pow</span>(l,<span class="number">3</span>)+</span><br><span class="line">            N/(<span class="number">120</span>*<span class="built_in">pow</span>(Rou,<span class="number">5</span>))*<span class="built_in">pow</span>(<span class="built_in">cos</span>(RadB),<span class="number">5</span>)*(<span class="number">5</span><span class="number">-18</span>*t*t+<span class="built_in">pow</span>(t,<span class="number">4</span>)+<span class="number">14</span>*Eta*Eta<span class="number">-58</span>*Eta*Eta*t*t)*<span class="built_in">pow</span>(l,<span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">       <span class="comment">//计算中央经线经度</span></span><br><span class="line">      <span class="comment">//  centerLong=L0;</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">geo typegeo=&#123;<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;;</span><br><span class="line">typegeo.parameter=<span class="number">1</span>;</span><br><span class="line">typegeo.projectType=<span class="number">1</span>;</span><br><span class="line">typegeo.geo_B_d=******;  <span class="comment">//测试经度点</span></span><br><span class="line">typegeo.geo_L_d=******;   <span class="comment">//测试纬度点</span></span><br><span class="line">gaussConvert(&amp;typegeo);</span><br><span class="line"><span class="keyword">double</span> x=typegeo.plane_X;</span><br><span class="line"><span class="keyword">double</span> y=typegeo.plane_Y;</span><br></pre></td></tr></table></figure></p>
+<h4>点到线段的最短距离</h4>
+<p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">distancePointLine</span><span class="params">(<span class="keyword">double</span> x,<span class="keyword">double</span> y,<span class="keyword">double</span> x1,<span class="keyword">double</span> y1,<span class="keyword">double</span> x2,<span class="keyword">double</span></span></span></span><br><span class="line"><span class="function"><span class="params">y2)</span>  <span class="comment">//p(x,y)实际点 A(x1,y1) B(x2,y2) 点到线段的最短距离</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> R=(x2-x1)*(x-x1)+(y2-y1)*(y-y1);</span><br><span class="line">    <span class="keyword">double</span> D=(x2-x1)*(x2-x1)+(y2-y1)*(y2-y1);</span><br><span class="line">    <span class="keyword">if</span>(R&lt;=<span class="number">0</span>)                                            <span class="comment">//最短距离等于AP</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sqrt</span>(<span class="built_in">pow</span>((x1-x),<span class="number">2</span>)+<span class="built_in">pow</span>((y1-y),<span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(R&gt;=D)                                       <span class="comment">//最短距离等于BP</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sqrt</span>(<span class="built_in">pow</span>((x2-x),<span class="number">2</span>)+<span class="built_in">pow</span>((y2-y),<span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>                                                <span class="comment">//最短距离等于垂线</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">double</span> r=R/D;</span><br><span class="line">        <span class="keyword">double</span> px=x1+(x2-x1)*r;</span><br><span class="line">        <span class="keyword">double</span> py=y1+(y2-y1)*r;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sqrt</span>(<span class="built_in">pow</span>((px-x),<span class="number">2</span>)+<span class="built_in">pow</span>((py-y),<span class="number">2</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4>两条线段的夹角</h4>
+<p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> LawJudge::straightAngle(<span class="keyword">double</span> x,<span class="keyword">double</span> y,<span class="keyword">double</span> x1,<span class="keyword">double</span> y1)</span><br><span class="line"><span class="comment">//求两条方向向量A=(x,y)和 B=(x1,y1)的夹角</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">double</span> A=x*x1+y*y1;</span><br><span class="line">    <span class="keyword">double</span> B;</span><br><span class="line">    <span class="keyword">if</span>(A==<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        B=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        B=(<span class="built_in">sqrt</span>(<span class="built_in">pow</span>(x,<span class="number">2</span>)+<span class="built_in">pow</span>(y,<span class="number">2</span>)))*(<span class="built_in">sqrt</span>(<span class="built_in">pow</span>(x1,<span class="number">2</span>)+<span class="built_in">pow</span>(y1,<span class="number">2</span>))) ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">double</span> angel=<span class="built_in">abs</span>(A/B);</span><br><span class="line">    <span class="keyword">double</span> hudu=<span class="built_in">acos</span>(angel);         <span class="comment">//弧度</span></span><br><span class="line">    <span class="keyword">double</span> jiaodu=(<span class="number">180</span>*hudu)/PI;     <span class="comment">//角度</span></span><br><span class="line">    <span class="keyword">return</span> jiaodu;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="https://www.fortable.cn/2018/02/26/road-match/" data-id="cje3wb23d00011gcs8emiveey" class="article-share-link"><i class="fa fa-share"></i>Share</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+        <a href="https://www.fortable.cn/2018/02/26/road-match/#comments" class="article-comment-link disqus-comment-count" data-disqus-url="https://www.fortable.cn/2018/02/26/road-match/">Comments</a>
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2018/02/26/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">Older</strong>
+            <div class="article-nav-title">Hello World</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    
+        <section id="comments">
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+</section>
+    
+
+</section>
+            
+                
+<aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">recent</h3>
+        <div class="widget">
+            <ul id="recent-post" class="">
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/02/26/road-match/" class="thumbnail">
+    
+    
+        <span style="background-image:url(http://ot27paxji.bkt.clouddn.com/roadmap.jpg)" alt="道路匹配算法--C++" class="thumbnail-image"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/features/">features</a></p>
+                            <p class="item-title"><a href="/2018/02/26/road-match/" class="title">道路匹配算法--C++</a></p>
+                            <p class="item-date"><time datetime="2018-02-26T07:22:08.182Z" itemprop="datePublished">2018-02-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-thumbnail">
+                            <a href="/2018/02/26/hello-world/" class="thumbnail">
+    
+    
+        <span class="thumbnail-image thumbnail-none"></span>
+    
+</a>
+
+                        </div>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"></p>
+                            <p class="item-title"><a href="/2018/02/26/hello-world/" class="title">Hello World</a></p>
+                            <p class="item-date"><time datetime="2018-02-26T06:57:16.468Z" itemprop="datePublished">2018-02-26</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">categories</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/features/">features</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">archives</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">2</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">tags</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/test/">test</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">tag cloud</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/test/" style="font-size: 10px;">test</a>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">links</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://hexo.io">Hexo</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2018 Eric<br>
+            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
+        </div>
+    </div>
+</footer>
+        
+    
+    <script>
+    var disqus_config = function () {
+        
+            this.page.url = 'https://www.fortable.cn/2018/02/26/road-match/';
+        
+        this.page.identifier = 'road-match';
+    };
+    (function() { 
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'eric-fortable' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>
