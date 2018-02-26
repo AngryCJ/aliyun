@@ -1,5 +1,8 @@
 ---
 title: 道路匹配算法--C++
+thumbnailImage: https://img17.pixhost.org/images/212/64698033_roadmap.jpg
+photos:
+- https://img17.pixhost.org/images/212/64698033_roadmap.jpg
 tags:
 - road match
 categories:
