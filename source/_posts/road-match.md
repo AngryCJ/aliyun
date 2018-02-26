@@ -2,13 +2,14 @@
 title: 道路匹配算法--C++
 ---
 使用GPS信息将设备匹配到实际所处道路上。道路默认为两个点一条直线，具体的GPS信息通过[高德地图](http://lbs.amap.com/console/show/picker)取得，事先要将所需要匹配的城市道路都下载至本地。GPS的坐标是标准的地球坐标，高德和百度地图都是对实际坐标进行了偏移处理，由于我们道路采集的坐标是高德坐标系，所以在这个工程中需要将实际的GPS坐标转换成高德坐标系。
-**目录 (Table of Contents)**
+
+** 目录 (Table of Contents)**
 
 [TOC]
 
 # 道路匹配算法流程图
 
-<img src="http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/RoadMatch.png">
+![img](http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/RoadMatch.png)
 
 # 道路匹配算法原理
 
@@ -16,14 +17,14 @@ title: 道路匹配算法--C++
 
 #### 1.距离匹配度
 
-<img src="http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/touying.png">
+![img](http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/touying.png)
 
 由于GPS系统内在的误差，在一般情况下接收到的数据定位点会偏离车辆实际行驶路段。通过对定位点P作其在各个候选道路上的投影，投影点位为P0，所以GPS点到线段最短距离为点到投影距离PP0.
 当投影点在道路上的投影点不在线段内，则点到线的最短距离，为点到线段两端的最短距离。
 
 #### 2.方向匹配度
 
-<img src="http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/direction.png">
+![img](http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/direction.png)
 
 在对候选路段进行判断时，可以通过确定误差区域在第一时间排除不想管的候选路段。由于GPS系统接受到的定位点轨迹与电子地图中的道路存在着方向上的偏差，因此需要对两者进行比较并将此作为一个重要的判断因素。
 从GPS系统中接受到的数据信息可知车辆的运行方向，然后分别计算车辆在每条候选路段上的方向匹配度。假设GPS系统显示的定位点轨迹为路线L1，
@@ -328,3 +329,4 @@ double LawJudge::straightAngle(double x,double y,double x1,double y1)
     return jiaodu;
 }
 ```
+
