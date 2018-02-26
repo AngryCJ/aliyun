@@ -15,7 +15,7 @@ categories:
 
 #### 1.距离匹配度
 
-[![Tranquilpeak](https://ot27paxji.bkt.clouddn.com/media/uploads/zinnia/2017/07/14/machine-learning.jpg)](http://louisbarranqueiro.github.io/hexo-theme-tranquilpeak)
+![Tranquilpeak](http://ot27paxji.bkt.clouddn.com/image/blog/005-roadmatch/touying.png)
 
 由于GPS系统内在的误差，在一般情况下接收到的数据定位点会偏离车辆实际行驶路段。通过对定位点P作其在各个候选道路上的投影，投影点位为P0，所以GPS点到线段最短距离为点到投影距离PP0.
 当投影点在道路上的投影点不在线段内，则点到线的最短距离，为点到线段两端的最短距离。
