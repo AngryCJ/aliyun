@@ -2,9 +2,9 @@
 title: 道路匹配算法--C++
 thumbnail: http://ot27paxji.bkt.clouddn.com/roadmap.jpg
 tags:
-- test
+- road match
 categories:
-- features
+- C++
 photos:
 - http://d1u9biwaxjngwg.cloudfront.net/tag-plugins-showcase/car-31.jpg 
 - http://d1u9biwaxjngwg.cloudfront.net/tag-plugins-showcase/car-9.jpg 
