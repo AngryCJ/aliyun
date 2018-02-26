@@ -4,7 +4,7 @@ thumbnail: https://img17.pixhost.org/images/212/64698033_roadmap.jpg
 photos:
 - https://img17.pixhost.org/images/212/64698033_roadmap.jpg
 tags:
-- road match c++
+- road match
 categories:
 - program
 ---
